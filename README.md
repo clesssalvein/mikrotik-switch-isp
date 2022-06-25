@@ -36,10 +36,14 @@ It uses access through certain gateways to certain public DNS addresses in the g
 
 ```
 /ip route
-add comment="-chk_isp1_pingServer1-" distance=1 dst-address=77.88.8.1 gateway=[/ip route get value-name=gateway [find where comment~"-gw1-"]] routing-mark=chk_isp1_pingServer1
-add comment="-chk_isp1_pingServer2-" distance=1 dst-address=208.67.222.222 gateway=[/ip route get value-name=gateway [find where comment~"-gw1-"]] routing-mark=chk_isp1_pingServer2
-add comment="-chk_isp2_pingServer1-" distance=1 dst-address=77.88.8.1 gateway=[/ip route get value-name=gateway [find where comment~"-gw2-"]] routing-mark=chk_isp2_pingServer1
-add comment="-chk_isp2_pingServer2-" distance=1 dst-address=208.67.222.222 gateway=[/ip route get value-name=gateway [find where comment~"-gw2-"]] routing-mark=chk_isp2_pingServer2
+add comment="-chk_isp1_pingServer1-" distance=1 dst-address=77.88.8.1 \
+gateway=[/ip route get value-name=gateway [find where comment~"-gw1-"]] routing-mark=chk_isp1_pingServer1
+add comment="-chk_isp1_pingServer2-" distance=1 dst-address=208.67.222.222 \
+gateway=[/ip route get value-name=gateway [find where comment~"-gw1-"]] routing-mark=chk_isp1_pingServer2
+add comment="-chk_isp2_pingServer1-" distance=1 dst-address=77.88.8.1 \
+gateway=[/ip route get value-name=gateway [find where comment~"-gw2-"]] routing-mark=chk_isp2_pingServer1
+add comment="-chk_isp2_pingServer2-" distance=1 dst-address=208.67.222.222 \
+gateway=[/ip route get value-name=gateway [find where comment~"-gw2-"]] routing-mark=chk_isp2_pingServer2
 ```
 
 - Add script "chk" (corresponding to the quantity of providers on router)
@@ -54,5 +58,6 @@ Insert contents of "chk_isp2.script" OR "chk_isp3.script" to script "chk"
 - Add scheduler task
 
 ```
-/system scheduler add interval=1m name=chk on-event=chk policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon start-time=startup</code>
+/system scheduler add interval=1m name=chk on-event=chk \
+policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon start-time=startup</code>
 ```
