@@ -50,7 +50,7 @@ It uses access through certain gateways to certain public DNS addresses in the g
 
 <code>/system script edit chk source</code>
 
-Insert contents of "chk_isp2" OR "chk_isp3" to script "chk"
+Insert contents of "chk_isp2.script" OR "chk_isp3.script" to script "chk"
 
 - Add scheduler task
 
