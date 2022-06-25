@@ -14,32 +14,30 @@ Mikrotik router must be configured with several ISPs, accordingly, several defau
 
 # Mikrotik router configuration
 
-On every interface binded to specific ISP add comments: **-wan1-**, **-wan2-**, etc.
+On each physical interface binded to specific ISP add comments: **-wan1-**, **-wan2-**, etc.:
 
-<code>
-/interface ethernet
-set comment="-wan1-" name=ether2-wan1
-set comment="-wan2-" name=ether3-wan2
-</code>
-  
-На каждом маршруте, выполняющем роль шлюза по-умолчанию каждого провайдера, пропишем комментарии: -gw1-, -gw2- и т.д.:
+<code>/interface ethernet</code>
 
-/ip route
+<code>set comment="-wan1-" name=ether2-wan1</code>
 
-add comment="-gw1-" distance=1 dst-address=0.0.0.0/0 gateway=$ISP1_GW
+<code>set comment="-wan2-" name=ether3-wan2</code>
 
-add comment="-gw2-" distance=1 dst-address=0.0.0.0/0 gateway=$ISP2_GW
+On each route that acts as the default gateway of each provider, add comments: **-gw1-**, **-gw2-**, etc.:
 
-Добавим маршруты с определенными route-mark. Скрипт мониторинга будет использовать эти маршруты для мониторинга определенного канала:
+<code>/ip route</code>
 
-    Здесь используется доступ через определенные шлюзы до определенных публичных DNS адресов в глобальной сети. Это необходимо для определения их доступности через определенного провайдера и, соответственно, однозначной работоспособности провайдера.
+<code>add comment="-gw1-" distance=1 dst-address=0.0.0.0/0 gateway=$ISP1_GW</code>
 
-/ip route
+<code>add comment="-gw2-" distance=1 dst-address=0.0.0.0/0 gateway=$ISP2_GW</code>
 
-add comment="-chk_isp1_pingServer1-" distance=1 dst-address=77.88.8.1 gateway=[/ip route get value-name=gateway [find where comment~"-gw1-"]] routing-mark=chk_isp1_pingServer1
+Let's add routes with certain route-marks. The monitoring script will use these routes to monitor a specific channel.
 
-add comment="-chk_isp1_pingServer2-" distance=1 dst-address=208.67.222.222 gateway=[/ip route get value-name=gateway [find where comment~"-gw1-"]] routing-mark=chk_isp1_pingServer2
+It uses access through certain gateways to certain public DNS addresses in the global network. This is necessary to determine their availability through a specific provider and, accordingly, the unambiguous health of the provider.
 
-add comment="-chk_isp2_pingServer1-" distance=1 dst-address=77.88.8.1 gateway=[/ip route get value-name=gateway [find where comment~"-gw2-"]] routing-mark=chk_isp2_pingServer1
+<code>add comment="-chk_isp1_pingServer1-" distance=1 dst-address=77.88.8.1 gateway=[/ip route get value-name=gateway [find where comment~"-gw1-"]] routing-mark=chk_isp1_pingServer1</code>
 
-add comment="-chk_isp2_pingServer2-" distance=1 dst-address=208.67.222.222 gateway=[/ip route get value-name=gateway [find where comment~"-gw2-"]] routing-mark=chk_isp2_pingServer2 
+<code>add comment="-chk_isp1_pingServer2-" distance=1 dst-address=208.67.222.222 gateway=[/ip route get value-name=gateway [find where comment~"-gw1-"]] routing-mark=chk_isp1_pingServer2</code>
+
+<code>add comment="-chk_isp2_pingServer1-" distance=1 dst-address=77.88.8.1 gateway=[/ip route get value-name=gateway [find where comment~"-gw2-"]] routing-mark=chk_isp2_pingServer1</code>
+
+<code>add comment="-chk_isp2_pingServer2-" distance=1 dst-address=208.67.222.222 gateway=[/ip route get value-name=gateway [find where comment~"-gw2-"]] routing-mark=chk_isp2_pingServer2</code>
