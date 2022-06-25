@@ -59,5 +59,5 @@ Insert contents of "chk_isp2.script" OR "chk_isp3.script" to script "chk"
 
 ```
 /system scheduler add interval=1m name=chk on-event=chk \
-policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon start-time=startup</code>
+policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon start-time=startup
 ```
