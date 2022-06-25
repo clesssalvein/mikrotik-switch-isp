@@ -10,7 +10,7 @@ Mikrotik router must be configured with several ISPs, accordingly, several defau
 
 - Every minute scheduler runs script "chk"
 - Script "chk" checks the availability of each ISP channel using the external public always available IP addresses (in our case DNS. 77.88.8.1 - Yandex, 208.67.222.222 - OpenDNS), using specially marked routes on the Mikrotik router
-- If higher priority channels are unavailable, a lower priority channel is switched on (by switching the default gateway)
+- If higher priority ISP are unavailable, a lower priority ISP is switched on (by switching the default gateway)
 
 # Mikrotik router configuration
 
