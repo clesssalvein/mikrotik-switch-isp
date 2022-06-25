@@ -16,42 +16,43 @@ Mikrotik router must be configured with several ISPs, accordingly, several defau
 
 - On each physical interface binded to specific ISP add comments: **-wan1-**, **-wan2-**, etc.:
 
-<code>/interface ethernet</code>
-
-<code>set comment="-wan1-" name=ether2-wan1</code>
-
-<code>set comment="-wan2-" name=ether3-wan2</code>
+```
+/interface ethernet
+set comment="-wan1-" name=ether2-wan1
+set comment="-wan2-" name=ether3-wan2
+```
 
 - On each route that acts as the default gateway of each provider, add comments: **-gw1-**, **-gw2-**, etc.:
 
-<code>/ip route</code>
-
-<code>add comment="-gw1-" distance=1 dst-address=0.0.0.0/0 gateway=$ISP1_GW</code>
-
-<code>add comment="-gw2-" distance=1 dst-address=0.0.0.0/0 gateway=$ISP2_GW</code>
+```
+/ip route
+add comment="-gw1-" distance=1 dst-address=0.0.0.0/0 gateway=$ISP1_GW
+add comment="-gw2-" distance=1 dst-address=0.0.0.0/0 gateway=$ISP2_GW
+```
 
 - Let's add routes with certain route-marks. The monitoring script will use these routes to monitor a specific channel.
 
 It uses access through certain gateways to certain public DNS addresses in the global network. This is necessary to determine their availability through a specific provider and, accordingly, the unambiguous health of the provider.
 
-<code>/ip route</code>
-
-<code>add comment="-chk_isp1_pingServer1-" distance=1 dst-address=77.88.8.1 gateway=[/ip route get value-name=gateway [find where comment~"-gw1-"]] routing-mark=chk_isp1_pingServer1</code>
-
-<code>add comment="-chk_isp1_pingServer2-" distance=1 dst-address=208.67.222.222 gateway=[/ip route get value-name=gateway [find where comment~"-gw1-"]] routing-mark=chk_isp1_pingServer2</code>
-
-<code>add comment="-chk_isp2_pingServer1-" distance=1 dst-address=77.88.8.1 gateway=[/ip route get value-name=gateway [find where comment~"-gw2-"]] routing-mark=chk_isp2_pingServer1</code>
-
-<code>add comment="-chk_isp2_pingServer2-" distance=1 dst-address=208.67.222.222 gateway=[/ip route get value-name=gateway [find where comment~"-gw2-"]] routing-mark=chk_isp2_pingServer2</code>
+```
+/ip route
+add comment="-chk_isp1_pingServer1-" distance=1 dst-address=77.88.8.1 gateway=[/ip route get value-name=gateway [find where comment~"-gw1-"]] routing-mark=chk_isp1_pingServer1
+add comment="-chk_isp1_pingServer2-" distance=1 dst-address=208.67.222.222 gateway=[/ip route get value-name=gateway [find where comment~"-gw1-"]] routing-mark=chk_isp1_pingServer2
+add comment="-chk_isp2_pingServer1-" distance=1 dst-address=77.88.8.1 gateway=[/ip route get value-name=gateway [find where comment~"-gw2-"]] routing-mark=chk_isp2_pingServer1
+add comment="-chk_isp2_pingServer2-" distance=1 dst-address=208.67.222.222 gateway=[/ip route get value-name=gateway [find where comment~"-gw2-"]] routing-mark=chk_isp2_pingServer2
+```
 
 - Add script "chk" (corresponding to the quantity of providers on router)
 
-<code>/system script add name=chk</code>
-
-<code>/system script edit chk source</code>
+```
+/system script add name=chk
+/system script edit chk source
+```
 
 Insert contents of "chk_isp2.script" OR "chk_isp3.script" to script "chk"
 
 - Add scheduler task
 
-<code>/system scheduler add interval=1m name=chk on-event=chk policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon start-time=startup</code>
+```
+/system scheduler add interval=1m name=chk on-event=chk policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon start-time=startup</code>
+```
