@@ -1,0 +1,151 @@
+#####
+#
+# Switcher between ISPs v.2022-01-24_isp3
+# by Cless
+#
+# Requirements:
+# - add comments for every ISP wan interface:
+#    /interface ethernet
+#    set comment="-wan1-" name=ether2-wan1
+#    set comment="-wan2-" name=ether3-wan2
+#    set comment="-wan3-" name=ether4-wan3
+# - add default-gw for every ISP:
+#    /ip route
+#    add comment="-gw1-" distance=1 dst-address=0.0.0.0/0 gateway=$ISP1_GW
+#    add comment="-gw2-" distance=1 dst-address=0.0.0.0/0 gateway=$ISP2_GW
+#    add comment="-gw3-" distance=1 dst-address=0.0.0.0/0 gateway=$ISP3_GW
+# - add custom routing-tables for every pingServer via every ISP:
+#    /ip route
+#    add comment="-chk_pingServer1_isp1-" distance=1 dst-address=8.8.4.4 gateway=$ISP1_GW routing-mark=chk_pingServer1_isp1
+#    add comment="-chk_pingServer2_isp1-" distance=1 dst-address=208.67.222.222 gateway=$ISP1_GW routing-mark=chk_pingServer2_isp1
+#    add comment="-chk_pingServer1_isp2-" distance=1 dst-address=8.8.4.4 gateway=$ISP2_GW routing-mark=chk_pingServer1_isp2
+#    add comment="-chk_pingServer2_isp2-" distance=1 dst-address=208.67.222.222 gateway=$ISP2_GW routing-mark=chk_pingServer2_isp2
+#
+#####
+
+
+# VARS
+
+# pingCount
+:local pingCount "5";
+
+# acceptable ping loss percent
+:local pingLossPercentAcceptable "50";
+
+# routing tables comments for every pingServer via every ISP
+:local "routingTable_chk_PingServer1_isp1_comment" "-chk_pingServer1_isp1-";
+:local "routingTable_chk_PingServer2_isp1_comment" "-chk_pingServer2_isp1-";
+:local "routingTable_chk_PingServer1_isp2_comment" "-chk_pingServer1_isp2-";
+:local "routingTable_chk_PingServer2_isp2_comment" "-chk_pingServer2_isp2-";
+
+# pingServers (IPs), commonly public reliable DNS servers,
+# for example "8.8.4.4" and "208.67.222.222"
+# (auto get by comment from route table)
+:local pingServer1 [:pick [/ip route get value-name=dst-address [find comment~$"routingTable_chk_PingServer1_isp1_comment"]] 0 \
+    [:find [/ip route get value-name=dst-address [find where comment~$"routingTable_chk_PingServer1_isp1_comment"]] "/"]];
+:local pingServer2 [:pick [/ip route get value-name=dst-address [find comment~$"routingTable_chk_PingServer2_isp1_comment"]] 0 \
+    [:find [/ip route get value-name=dst-address [find where comment~$"routingTable_chk_PingServer2_isp1_comment"]] "/"]];
+
+# ifWans comments
+:local ifWan1Comment "-wan1-";
+:local ifWan2Comment "-wan2-";
+#:local ifWan3Comment "-wan3-";
+
+# ifWan names (auto get by comments)
+:local ifWan1 [/interface get value-name=name [find where comment~"$ifWan1Comment"]] ;
+:local ifWan2 [/interface get value-name=name [find where comment~"$ifWan2Comment"]] ;
+#:local ifWan2 [/interface get value-name=name [find where comment~"$ifWan3Comment"]] ;
+
+# gw from route table comments
+:local gw1Comment "-gw1-";
+:local gw2Comment "-gw2-";
+:local gw3Comment "-gw3-";
+
+
+# START CHECK
+
+# check ping to pingServers via appropriate routing tables
+:local isp1PingServer1PingReceived [/ping $pingServer1 interface="$ifWan1" count="$pingCount" \
+    routing-table=[:put [ip route get value-name=routing-mark [find where comment~$"routingTable_chk_PingServer1_isp1_comment"]]]];
+:local isp1PingServer2PingReceived [/ping $pingServer2 interface="$ifWan1" count="$pingCount" \
+    routing-table=[:put [ip route get value-name=routing-mark [find where comment~$"routingTable_chk_PingServer2_isp1_comment"]]]];
+:local isp2PingServer1PingReceived [/ping $pingServer1 interface="$ifWan2" count="$pingCount" \
+    routing-table=[:put [ip route get value-name=routing-mark [find where comment~$"routingTable_chk_PingServer1_isp2_comment"]]]];
+:local isp2PingServer2PingReceived [/ping $pingServer2 interface="$ifWan2" count="$pingCount" \
+    routing-table=[:put [ip route get value-name=routing-mark [find where comment~$"routingTable_chk_PingServer2_isp2_comment"]]]];
+
+# get packetLoss in percents
+:local isp1PingServer1PingLossPercent [(100 - ($isp1PingServer1PingReceived * 100) / $pingCount)];
+:local isp1PingServer2PingLossPercent [(100 - ($isp1PingServer2PingReceived * 100) / $pingCount)];
+:local isp2PingServer1PingLossPercent [(100 - ($isp2PingServer1PingReceived * 100) / $pingCount)];
+:local isp2PingServer2PingLossPercent [(100 - ($isp2PingServer2PingReceived * 100) / $pingCount)];
+
+# debug
+:put "isp1PingServer1PingLoss: $isp1PingServer1PingLossPercent %";
+:put "isp1PingServer2PingLoss: $isp1PingServer2PingLossPercent %";
+:put "isp2PingServer1PingLoss: $isp2PingServer1PingLossPercent %";
+:put "isp2PingServer2PingLoss: $isp2PingServer2PingLossPercent %";
+
+# get enabled and disabled gws
+:local gw1disabled [/ip route get value-name=disabled [find comment~"$gw1Comment"]] ;
+:local gw2disabled [/ip route get value-name=disabled [find comment~"$gw2Comment"]] ;
+:local gw3disabled [/ip route get value-name=disabled [find comment~"$gw3Comment"]] ;
+
+# depending on ping loss percent set active gw
+:if ($isp1PingServer1PingLossPercent <= $pingLossPercentAcceptable || $isp1PingServer2PingLossPercent <= $pingLossPercentAcceptable) do={
+
+    # gw1 ON
+    :if ($gw1disabled = true) do={
+        :put "gw1 ON!";
+        /ip route enable [find comment~"$gw1Comment"];
+    } else={ :put "gw1 enabled, nothing to do"; };
+
+    :if ($gw2disabled = false) do={
+        :put "gw2 OFF!";
+        /ip route disable [find comment~"$gw2Comment"];
+    } else={ :put "gw2 disabled, nothing to do"; };
+
+    :if ($gw3disabled = false) do={
+        /ip route disable [find comment~"$gw3Comment"];
+        :put "gw3 OFF!";
+    } else={ :put "gw3 disabled, nothing to do"; };
+
+} else={
+
+        # gw2 ON
+        :if ($isp2PingServer1PingLossPercent <= $pingLossPercentAcceptable || $isp2PingServer2PingLossPercent <= $pingLossPercentAcceptable) do={
+
+            :if ($gw1disabled = false) do={
+                :put "gw1 OFF!";
+                /ip route disable [find comment~"$gw1Comment"];
+            } else={ :put "gw1 disabled, nothing to do"; };
+
+            :if ($gw2disabled = true) do={
+                :put "gw2 ON!";
+                /ip route enable [find comment~"$gw2Comment"];
+            } else={ :put "gw2 enabled, nothing to do"; };
+
+            :if ($gw3disabled = false) do={
+                /ip route disable [find comment~"$gw3Comment"];
+                :put "gw3 OFF!";
+            } else={ :put "gw3 disabled, nothing to do"; };
+
+        } else={
+
+            # gw3 ON
+            :if ($gw1disabled = false) do={
+                :put "gw1 OFF!";
+                /ip route disable [find comment~"$gw1Comment"];
+            } else={ :put "gw1 disabled, nothing to do"; };
+
+            :if ($gw2disabled = false) do={
+                :put "gw2 OFF!";
+                /ip route disable [find comment~"$gw2Comment"];
+            } else={ :put "gw2 disabled, nothing to do"; };
+
+            :if ($gw3disabled = true) do={
+                /ip route enable [find comment~"$gw3Comment"];
+                :put "gw3 ON!";
+            } else={ :put "gw3 enabled, nothing to do"; };
+        }
+    }
