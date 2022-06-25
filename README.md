@@ -46,6 +46,12 @@ It uses access through certain gateways to certain public DNS addresses in the g
 
 - Add script "chk" (corresponding to the quantity of providers on router)
 
+<code>/system script add name=chk</code>
+
+<code>/system script edit chk source</code>
+
+Insert contents of "chk_isp2" OR "chk_isp3" to script "chk"
+
 - Add scheduler task
 
 <code>/system scheduler add interval=1m name=chk on-event=chk policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon start-time=startup</code>
