@@ -16,9 +16,9 @@
 #    add comment="-gw3-" distance=1 dst-address=0.0.0.0/0 gateway=$ISP3_GW
 # - add custom routing-tables for every pingServer via every ISP:
 #    /ip route
-#    add comment="-chk_pingServer1_isp1-" distance=1 dst-address=8.8.4.4 gateway=$ISP1_GW routing-mark=chk_pingServer1_isp1
+#    add comment="-chk_pingServer1_isp1-" distance=1 dst-address=77.88.8.1 gateway=$ISP1_GW routing-mark=chk_pingServer1_isp1
 #    add comment="-chk_pingServer2_isp1-" distance=1 dst-address=208.67.222.222 gateway=$ISP1_GW routing-mark=chk_pingServer2_isp1
-#    add comment="-chk_pingServer1_isp2-" distance=1 dst-address=8.8.4.4 gateway=$ISP2_GW routing-mark=chk_pingServer1_isp2
+#    add comment="-chk_pingServer1_isp2-" distance=1 dst-address=77.88.8.1 gateway=$ISP2_GW routing-mark=chk_pingServer1_isp2
 #    add comment="-chk_pingServer2_isp2-" distance=1 dst-address=208.67.222.222 gateway=$ISP2_GW routing-mark=chk_pingServer2_isp2
 #
 #####
@@ -39,7 +39,7 @@
 :local "routingTable_chk_PingServer2_isp2_comment" "-chk_pingServer2_isp2-";
 
 # pingServers (IPs), commonly public reliable DNS servers,
-# for example "8.8.4.4" and "208.67.222.222"
+# for example "77.88.8.1" and "208.67.222.222"
 # (auto get by comment from route table)
 :local pingServer1 [:pick [/ip route get value-name=dst-address [find comment~$"routingTable_chk_PingServer1_isp1_comment"]] 0 \
     [:find [/ip route get value-name=dst-address [find where comment~$"routingTable_chk_PingServer1_isp1_comment"]] "/"]];
