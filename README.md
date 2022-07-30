@@ -4,7 +4,8 @@ The system is designed to automatically switch (reassign the default gateway) to
 
 # Requirements
 
-Mikrotik router must be configured with several ISPs, accordingly, several default gateways.
+- Mikrotik router (RouterOS v6.x)
+- Mikrotik router must be configured with several ISPs, accordingly, several default gateways.
 
 # How it works
 
