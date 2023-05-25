@@ -1,6 +1,6 @@
 # Description
 
-The system is designed to automatically switch (reassign the default gateway) to a lower priority ISP if several providers are configured on the Mikrotik router, and one or more of higher priority ISP failed.
+The system is designed to automatically switch (reassign the default gateway) to a provider with a lower priority if several providers are configured on the Mikrotik router, and one or more providers with a higher priority fail.
 
 # Requirements
 
